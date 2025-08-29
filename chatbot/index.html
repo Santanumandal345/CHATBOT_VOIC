@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beach Voice Assistant Chatbot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+                url('https://static.vecteezy.com/system/resources/thumbnails/026/189/545/small/violet-sunset-on-beach-sand-holiday-background-ai-generated-photo.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .header {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 25px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .chat-box {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            height: 400px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+            position: relative;
+        }
+
+        .user-message {
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background: rgba(255, 255, 255, 0.2);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .text-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .text-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .btn {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .voice-btn {
+            position: relative;
+            width: 70px;
+            height: 70px;
+        }
+
+        .voice-btn.listening {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(to right, #ff5e62, #ff9966);
+        }
+
+        .voice-btn i {
+            font-size: 1.8rem;
+        }
+
+        .waves {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: inherit;
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .listening .waves {
+            animation: sonar 1.5s infinite;
+        }
+
+        .status {
+            text-align: center;
+            font-style: italic;
+            color: #ccc;
+            min-height: 24px;
+            margin: 10px 0;
+        }
+
+        .commands {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 10px;
+        }
+
+        .commands h3 {
+            color: #ff9a9e;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .commands-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            list-style-position: inside;
+            padding-left: 15px;
+        }
+
+        .commands-list li {
+            margin-bottom: 8px;
+            color: #fad0c4;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes sonar {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            p {
+                font-size: 1.1rem;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .voice-btn {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .header,
+            .chat-box,
+            .input-area {
+                padding: 15px;
+            }
+
+            .commands-list {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                width: 50px;
+                height: 50px;
+            }
+        }
+
+        /* Scrollbar styling */
+        .chat-box::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-box::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .chat-box::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #ff9a9e, #fad0c4);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>YOUR FRIEND</h1>
+            <p>Enjoy the beautiful violet sunset while chatting with your AI assistant. Type your message or use the
+                voice command feature!</p>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-box" id="chat-box">
+                <div class="message bot-message">
+                    Hi there! 👋 I'm your friend. How can I help you today?
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
+
+            <div class="status" id="status">
+                Ready to chat...
+            </div>
+
+            <div class="input-area">
+                <input type="text" class="text-input" id="user-input" placeholder="Type your message here...">
+                <button class="btn" id="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+                <button class="btn voice-btn" id="voice-btn">
+                    <i class="fas fa-microphone"></i>
+                    <div class="waves"></div>
+                </button>
+            </div>
+
+            <div class="commands">
+                <h3>Try saying:</h3>
+                <ul class="commands-list">
+                    <li>"What's the time?"</li>
+                    <li>"Tell me a joke"</li>
+                    <li>"How's the weather?"</li>
+                    <li>"What's your name?"</li>
+                    <li>"Thank you"</li>
+                    <li>"What can you do?"</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const chatBox = document.getElementById('chat-box');
+            const userInput = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
+            const voiceBtn = document.getElementById('voice-btn');
+            const status = document.getElementById('status');
+
+            // Check if browser supports speech recognition
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            let recognition;
+
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+            } else {
+                status.textContent = "Speech recognition not supported in this browser. Try Chrome or Edge.";
+                voiceBtn.disabled = true;
+            }
+
+            const synthesis = window.speechSynthesis;
+
+            // Add message to chat
+            function addMessage(message, isUser) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                messageDiv.classList.add(isUser ? 'user-message' : 'bot-message');
+
+                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                messageDiv.innerHTML = `
+                    ${message}
+                    <div class="message-time">${time}</div>
+                `;
+
+                chatBox.appendChild(messageDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
+            // Generate bot response
+            function generateBotResponse(userMessage) {
+                const message = userMessage.toLowerCase();
+                let response;
+
+                if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
+                    response = "Hello there! What a beautiful beach day, isn't it? How can I assist you?";
+                } else if (message.includes('time')) {
+                    const now = new Date();
+                    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    response = `The current time is ${time}. Perfect beach time!`;
+                } else if (message.includes('how are you')) {
+                    response = "I'm doing great! Enjoying this virtual beach sunset. How about you?";
+                } else if (message.includes('name')) {
+                    response = "I'm Sandy, your beach assistant!";
+                } else if (message.includes('thank')) {
+                    response = "You're welcome! Is there anything else I can help with?";
+                } else if (message.includes('weather')) {
+                    response = "I don't have real-time weather data, but with this beautiful sunset, I'd say it's perfect beach weather!";
+                } else if (message.includes('joke')) {
+                    const jokes = [
+                        "Why did the beach blush? Because the sea waved!",
+                        "What do you call a fish wearing a bowtie? Sofishticated!",
+                        "Why don't oysters share? Because they're shellfish!",
+                        "What did the ocean say to the beach? Nothing, it just waved!",
+                        "Why did the sand get angry? Because it was rubbed the wrong way!"
+                    ];
+                    response = jokes[Math.floor(Math.random() * jokes.length)];
+                } else if (message.includes('bye') || message.includes('goodbye')) {
+                    response = "Goodbye! Enjoy the rest of your day at the beach!";
+                } else if (message.includes('what can you do')) {
+                    response = "I can tell you the time, share jokes, chat about the beach, and more! Just ask.";
+                } else {
+                    const defaultResponses = [
+                        "That's interesting. Tell me more!",
+                        "I'm here to help you enjoy this beach experience. What else would you like to know?",
+                        "The sound of waves is so relaxing, don't you think? What can I help you with?",
+                        "I'm still learning about the world. Could you explain that in another way?",
+                        "Let's keep enjoying this beach vibe. What else would you like to talk about?"
+                    ];
+                    response = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+                }
+
+                addMessage(response, false);
+                speak(response);
+            }
+
+            // Speak text
+            function speak(text) {
+                if (synthesis.speaking) {
+                    synthesis.cancel();
+                }
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                utterance.volume = 0.8;
+                synthesis.speak(utterance);
+            }
+
+            // Handle text message
+            function handleTextMessage() {
+                const message = userInput.value.trim();
+
+                if (message) {
+                    addMessage(message, true);
+                    userInput.value = '';
+                    status.textContent = "Thinking...";
+
+                    setTimeout(() => {
+                        status.textContent = "Ready...";
+                        generateBotResponse(message);
+                    }, 1000);
+                }
+            }
+
+            // Handle voice message
+            function handleVoiceMessage() {
+                if (recognition) {
+                    recognition.start();
+                    voiceBtn.classList.add('listening');
+                    status.textContent = "Listening... Speak now";
+                }
+            }
+
+            // Event listeners
+            sendBtn.addEventListener('click', handleTextMessage);
+
+            userInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    handleTextMessage();
+                }
+            });
+
+            voiceBtn.addEventListener('click', function () {
+                if (voiceBtn.classList.contains('listening')) {
+                    recognition.stop();
+                    voiceBtn.classList.remove('listening');
+                    status.textContent = "Ready to chat...";
+                } else {
+                    handleVoiceMessage();
+                }
+            });
+
+            // Speech recognition events
+            if (recognition) {
+                recognition.onresult = function (event) {
+                    const command = event.results[0][0].transcript;
+                    addMessage(command, true);
+                    status.textContent = "Processing...";
+
+                    setTimeout(() => {
+                        generateBotResponse(command);
+                        status.textContent = "Ready...";
+                    }, 1000);
+                };
+
+                recognition.onend = function () {
+                    voiceBtn.classList.remove('listening');
+                    status.textContent = "Ready to chat...";
+                };
+
+                recognition.onerror = function (event) {
+                    voiceBtn.classList.remove('listening');
+                    status.textContent = `Error: ${event.error}`;
+                    addMessage("Sorry, I didn't catch that. Could you please repeat?", false);
+                };
+            }
+        });
+    </script>
+</body>
+
+</html>
